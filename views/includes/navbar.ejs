@@ -1,0 +1,50 @@
+<nav class="navbar navbar-expand-md navbar-light bg-light border-bottom sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav navbar-explore">
+        <a class="nav-link" href="/listings">Explore</a>
+      </div>
+
+      <form class="listing-search" action="/listings" method="GET" role="search">
+        <label class="listing-search-destination">
+          <span>Where</span>
+          <input
+            type="search"
+            name="location"
+            placeholder="Anywhere"
+            value="<%= typeof searchLocation !== 'undefined' ? searchLocation : '' %>"
+            aria-label="Search by destination"
+          >
+        </label>
+        <span class="listing-search-divider" aria-hidden="true"></span>
+        <span class="listing-search-option">
+          <strong>When</strong>
+          <span>Any week</span>
+        </span>
+        <span class="listing-search-divider" aria-hidden="true"></span>
+        <span class="listing-search-option listing-search-guests">
+          <strong>Who</strong>
+          <span>Add guests</span>
+        </span>
+        <button class="listing-search-submit" type="submit" aria-label="Search listings">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </form>
+
+      <div class="navbar-nav ms-auto navbar-account">
+        <a class="nav-link" href="/listings/new">WanderLust Your Home</a>
+        <% if (!currUser) { %>
+          <a class="nav-link" href="/signup"><b>Sign Up</b></a>
+          <a class="nav-link" href="/login"><b>Log in</b></a>
+        <% } %>
+        <% if (currUser) { %>
+          <a class="nav-link" href="/logout"><b>Log out</b></a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</nav>

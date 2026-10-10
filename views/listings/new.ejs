@@ -1,0 +1,140 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-3">
+    <div class="col-8 offset-2">
+
+        <br>
+
+        <h3>Create a New Listing</h3>
+
+        <form method="POST" action="/listings" novalidate class="needs-validation" enctype="multipart/form-data">
+
+            <!-- Title -->
+            <div class="mb-3">
+                <label for="title" class="form-label">
+                    Title
+                </label>
+
+                <input
+                    type="text"
+                    id="title"
+                    name="listing[title]"
+                    placeholder="Enter a Catchy Title"
+                    class="form-control"
+                    required
+                >
+                <div class="valid-feedback">Title looks good!</div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+                <label for="description" class="form-label">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    name="listing[description]"
+                    placeholder="Describe the views, vibes & experiences..."
+                    class="form-control"
+                    required
+                ></textarea>
+                <div class="invalid-feedback">Please enter a short description</div>
+            </div>
+
+            <!-- Image -->
+            <!-- <div class="mb-3">
+                <label for="image" class="form-label">
+                    Image Link
+                </label>
+
+                <input
+                    type="text"
+                    id="image"
+                    name="listing[image]"
+                    placeholder="Enter image URL/Link"
+                    class="form-control"
+                >
+            </div> -->
+              <div class="mb-3">
+                <label for="image" class="form-label">
+                    Uplaod Listing Image
+                </label>
+
+                <input
+                    type="file"
+                    id="image"
+                    name="listing[image]"
+                    class="form-control"
+                    required
+                >
+            </div>
+
+            <!-- Price + Country -->
+            <div class="row">
+
+                <!-- Price -->
+                <div class="mb-3 col-md-4">
+                    <label for="price" class="form-label">
+                        Price
+                    </label>
+
+                    <input
+                        type="number"
+                        id="price"
+                        name="listing[price]"
+                        placeholder="1200"
+                        class="form-control"
+                        required
+                    >
+                    <div class="invalid-feedback">Price should be valid</div>
+                </div>
+
+                <!-- Country -->
+                <div class="mb-3 col-md-8">
+                    <label for="country" class="form-label">
+                        Country
+                    </label>
+
+                    <input
+                        type="text"
+                        id="country"
+                        name="listing[country]"
+                        placeholder="India"
+                        class="form-control"
+                        required
+                    >
+                    <div class="invalid-feedback">Country Name should be valid</div>
+                </div>
+
+            </div>
+
+            <!-- Location -->
+            <div class="mb-3">
+                <label for="location" class="form-label">
+                    Location
+                </label>
+
+                <input
+                    type="text"
+                    id="location"
+                    name="listing[location]"
+                    placeholder="Jaipur, Rajasthan"
+                    class="form-control"
+                    required
+                >
+                <div class="invalid-feedback">Location should be valid</div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                class="btn btn-dark add-btn"
+            >
+                ADD
+            </button>
+
+        </form>
+
+    </div>
+</div>

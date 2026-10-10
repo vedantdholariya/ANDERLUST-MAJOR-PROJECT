@@ -1,0 +1,247 @@
+<% layout("/layouts/boilerplate") %>
+
+<main class="listing-show">
+    <a class="listing-back-link" href="/listings">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        Back to all listings
+    </a>
+
+    <article class="listing-detail">
+        <img
+            src="<%= listing.image && listing.image.url ? listing.image.url : 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b' %>"
+            class="listing-detail-image"
+            alt="<%= listing.title %>"
+        >
+
+        <div class="listing-detail-content">
+            <div class="listing-detail-heading">
+                <div>
+                    <p class="listing-eyebrow">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                        <%= listing.location %><%= listing.country ? `, ${listing.country}` : "" %>
+                    </p>
+                    <h1><%= listing.title %></h1>
+                </div>
+                <% if (isOwner) { %>
+                    <span class="listing-owner-badge">Your listing</span>
+                <% } %>
+            </div>
+
+            <p class="listing-description"><%= listing.description %></p>
+
+            <div class="listing-detail-footer">
+                <div class="listing-price">
+                    <span class="listing-price-value">₹<%= listing.price.toLocaleString("en-IN") %></span>
+                    <span class="listing-price-caption">per night</span>
+                </div>
+                <p class="listing-host">
+                    <span class="listing-host-avatar" aria-hidden="true">
+                        <i class="fa-regular fa-user"></i>
+                    </span>
+                    Hosted by <strong><%= listing.owner ? listing.owner.username : "Unknown user" %></strong>
+                </p>
+            </div>
+
+            <% if (isOwner) { %>
+                <div class="listing-owner-actions">
+                    <a href="/listings/<%= listing._id %>/edit" class="btn listing-edit-button">
+                        <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
+                        Edit listing
+                    </a>
+                    <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+                        <button type="submit" class="btn listing-delete-button">
+                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            <% } %>
+        </div>
+    </article>
+
+    <section class="listing-reviews" aria-labelledby="reviews-heading">
+        <div class="listing-reviews-heading">
+            <div>
+                <p class="listing-eyebrow">Guest experiences</p>
+                <h2 id="reviews-heading">Reviews <span>(<%= listing.reviews.length %>)</span></h2>
+            </div>
+        </div>
+
+        <% if (currUser) { %>
+            <form
+                action="/listings/<%= listing.id %>/reviews"
+                method="POST"
+                novalidate
+                class="needs-validation review-form"
+            >
+                <h3>Share your experience</h3>
+                <div class="review-form-fields">
+                    <div class="review-rating-field">
+                        <label for="rating" class="form-label">Your rating</label>
+                        <div class="review-rating-control">
+                            <i class="fa-solid fa-star" aria-hidden="true"></i>
+                            <input
+                                type="range"
+                                min="1"
+                                max="5"
+                                value="5"
+                                id="rating"
+                                name="review[rating]"
+                                class="form-range"
+                            >
+                            <span>1–5</span>
+                        </div>
+                    </div>
+                    <div class="review-comment-field">
+                        <label for="comment" class="form-label">Your review</label>
+                        <textarea
+                            name="review[comment]"
+                            id="comment"
+                            rows="3"
+                            class="form-control"
+                            placeholder="What did you enjoy about your stay?"
+                            required
+                        ></textarea>
+                        <div class="invalid-feedback">Please add a comment for your review.</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn review-submit-button">
+                    Post review
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+        <% } else { %>
+            <div class="review-login-prompt">
+                <span class="review-prompt-icon"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i></span>
+                <p>Stayed here? <a href="/login">Log in</a> to share your experience.</p>
+            </div>
+        <% } %>
+
+        <% if (listing.reviews.length) { %>
+            <div class="review-grid">
+                <% listing.reviews.forEach((review) => { %>
+                    <article class="review-card">
+                        <div class="review-card-header">
+                            <div class="review-author">
+                                <span class="review-author-avatar" aria-hidden="true">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                                <div>
+                                    <h3><%= review.author ? review.author.username : "Former user" %></h3>
+                                    <p>Guest review</p>
+                                </div>
+                            </div>
+                            <span class="review-rating-badge">
+                                <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                <%= review.rating %>
+                            </span>
+                        </div>
+                        <p class="review-comment"><%= review.comment %></p>
+                        <% if (currUser && review.author && review.author._id.equals(currUser._id)) { %>
+                            <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                                <button type="submit" class="review-delete-button">
+                                    <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                                    Delete your review
+                                </button>
+                            </form>
+                        <% } %>
+                    </article>
+                <% }) %>
+            </div>
+        <% } %>
+    </section>
+    <div class="listing-map-wrap">
+        <h3>Where you'll be</h3>
+        <div
+            id="map"
+            aria-label="Map showing the listing area"
+            data-longitude="<%= longitude ?? '' %>"
+            data-latitude="<%= latitude ?? '' %>"
+        ></div>
+    </div>
+</main>
+<script>
+    window.addEventListener("DOMContentLoaded", async () => {
+        const mapContainer = document.getElementById("map");
+        const mapToken = <%- JSON.stringify(process.env.MAP_TOKEN || '') %>;
+        const longitude = mapContainer.dataset.longitude === "" ? NaN : Number(mapContainer.dataset.longitude);
+        const latitude = mapContainer.dataset.latitude === "" ? NaN : Number(mapContainer.dataset.latitude);
+        const savedCoordinates = Number.isFinite(longitude) && Number.isFinite(latitude)
+            ? [longitude, latitude]
+            : null;
+        const place = <%- JSON.stringify(`${listing.location}, ${listing.country || ''}`).replace(/</g, '\\u003c') %>;
+
+        if (!mapToken) {
+            mapContainer.innerHTML = '<div class="map-fallback">Map unavailable until a Mapbox token is configured.</div>';
+            return;
+        }
+
+        try {
+            if (typeof mapboxgl === "undefined") {
+                throw new Error("Mapbox GL JS did not load. Check the browser connection or content blockers.");
+            }
+
+            mapboxgl.accessToken = mapToken;
+            let coordinates = savedCoordinates;
+            if (
+                !Array.isArray(coordinates) ||
+                coordinates.length !== 2 ||
+                !coordinates.every(Number.isFinite)
+            ) {
+                const geocodeResponse = await fetch(
+                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(place)}.json?limit=1&access_token=${encodeURIComponent(mapToken)}`
+                );
+                if (!geocodeResponse.ok) {
+                    throw new Error(`Mapbox geocoding failed (${geocodeResponse.status})`);
+                }
+
+                const geocodeResult = await geocodeResponse.json();
+                coordinates = geocodeResult.features?.[0]?.center;
+            }
+            if (!coordinates) {
+                mapContainer.innerHTML = '<div class="map-fallback">Could not find this listing location on the map.</div>';
+                return;
+            }
+
+            const map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v12",
+                center: coordinates,
+                zoom: 9,
+                attributionControl: false,
+                logoPosition: "bottom-right"
+            });
+
+            map.on("error", (event) => {
+                console.error("Mapbox map error:", event.error);
+                if (!mapContainer.querySelector(".map-fallback")) {
+                    const fallback = document.createElement("div");
+                    fallback.className = "map-fallback";
+                    fallback.textContent = `Mapbox could not load the map: ${event.error.message}`;
+                    mapContainer.replaceChildren(fallback);
+                }
+            });
+
+            const markerElement = document.createElement("div");
+            markerElement.className = "map-pin";
+
+            new mapboxgl.Marker({
+                element: markerElement,
+                anchor: "center"
+            })
+                .setLngLat(coordinates)
+                .setPopup(
+                    new mapboxgl.Popup({ offset: 25 }).setText(
+                        "Exact Location provided after booking"
+                    )
+                )
+                .addTo(map);
+        } catch (error) {
+            console.error("Unable to load the listing map:", error);
+            const fallback = document.createElement("div");
+            fallback.className = "map-fallback";
+            fallback.textContent = `Unable to load the map: ${error.message}`;
+            mapContainer.replaceChildren(fallback);
+        }
+    });
+</script>
